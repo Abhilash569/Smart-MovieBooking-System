@@ -1189,27 +1189,21 @@ function displayTheatresForSelection(theatres, isNearby = false) {
         const id = Number(theatre.id || theatre.theatreId || Math.floor(Math.random()*1000000));
         
         return `
-        <div class="col-md-6 mb-3 theatre-card-item" data-theatre-id="${id}">
-            <div class="card h-100">
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="card-title mb-0">${name}</h6>
-                        ${isNearby ? '<span class="badge bg-success">Nearby</span>' : ''}
-                    </div>
-                    <p class="card-text small text-muted mb-3">
-                        <i class="bi bi-geo-alt"></i> ${addr}
-                    </p>
-                    <div class="mb-2">
-                        <small class="text-muted d-block mb-2"><i class="bi bi-clock"></i> Show Times:</small>
-                        <div class="d-flex flex-wrap gap-2">
-                            ${showTimes.map(time => `<button type="button" class="btn btn-sm btn-outline-primary showtime-btn" data-theatre-id="${id}" data-show="${time}">${time}</button>`).join('')}
-                        </div>
-                    </div>
-                    <div class="mt-auto">
-                        <button type="button" class="btn btn-primary w-100 book-btn" data-theatre-id="${id}"><i class="bi bi-ticket-perforated"></i> Book Tickets</button>
-                    </div>
+        <div style="width:45%; min-width:300px; background:white; border:1px solid #ddd; border-radius:8px; padding:15px; margin:10px; box-shadow:0 2px 4px rgba(0,0,0,0.1);" data-theatre-id="${id}">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <h6 style="margin:0; color:#2c3e50; font-weight:600;">${name}</h6>
+                ${isNearby ? '<span style="background:#28a745; color:white; padding:2px 8px; border-radius:12px; font-size:12px;">Nearby</span>' : ''}
+            </div>
+            <p style="color:#666; font-size:14px; margin-bottom:15px;">
+                📍 ${addr}
+            </p>
+            <div style="margin-bottom:15px;">
+                <small style="color:#666; display:block; margin-bottom:8px;">⏰ Show Times:</small>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    ${showTimes.map(time => `<button type="button" style="padding:5px 12px; border:1px solid #007bff; background:white; color:#007bff; border-radius:4px; cursor:pointer;" class="showtime-btn" data-theatre-id="${id}" data-show="${time}">${time}</button>`).join('')}
                 </div>
             </div>
+            <button type="button" style="width:100%; padding:10px; background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:500;" class="book-btn" data-theatre-id="${id}">🎟️ Book Tickets</button>
         </div>
         `;
     }).join('');
@@ -1218,6 +1212,20 @@ function displayTheatresForSelection(theatres, isNearby = false) {
     
     // Inject HTML safely
     theatreList.innerHTML = htmlContent;
+    
+    // FORCE VISIBILITY - Fix the 0 height issue
+    const modalBody = document.querySelector('#theatreSelectionModal .modal-body');
+    if (modalBody) {
+        modalBody.style.cssText = 'background: white !important; display: block !important; min-height: 400px !important; padding: 20px !important;';
+    }
+    theatreList.style.cssText = 'display: flex !important; flex-wrap: wrap !important; gap: 1rem !important; padding: 10px !important; min-height: 300px !important;';
+    
+    // Force all cards visible
+    setTimeout(() => {
+        theatreList.querySelectorAll('.theatre-card-item').forEach(item => {
+            item.style.cssText = 'display: block !important; width: 45% !important; background: white !important; padding: 10px !important; margin: 5px !important; border: 1px solid #ddd !important; border-radius: 8px !important;';
+        });
+    }, 100);
     
     // Attach event listeners defensively
     theatreList.querySelectorAll('.showtime-btn').forEach(btn => {
