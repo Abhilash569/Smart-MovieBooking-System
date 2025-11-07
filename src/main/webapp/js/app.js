@@ -1042,14 +1042,16 @@ function viewMyBookings() {
 
 // Show theatre selection modal
 function showTheatreSelection() {
-    // Clear previous status
+    // Clear previous status and list
     document.getElementById('locationStatus').innerHTML = '';
+    document.getElementById('theatreList').innerHTML = '<div class="col-12 text-center"><div class="spinner-border" role="status"></div><p>Loading theatres...</p></div>';
     
-    // Load all theatres initially
-    loadTheatresForSelection();
-    
+    // Show modal first
     const modal = new bootstrap.Modal(document.getElementById('theatreSelectionModal'));
     modal.show();
+    
+    // Then load all theatres
+    loadTheatresForSelection();
 }
 
 // Load theatres for selection

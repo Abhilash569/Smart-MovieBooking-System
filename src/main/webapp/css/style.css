@@ -396,6 +396,16 @@ body {
 
 
 /* Theatre Selection Modal Styles */
+#theatreSelectionModal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+#theatreList {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
 .theatre-card {
     cursor: pointer;
     transition: all 0.3s ease;
