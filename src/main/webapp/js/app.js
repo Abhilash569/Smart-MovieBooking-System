@@ -1145,8 +1145,8 @@ function displayTheatresForSelection(theatres, isNearby = false) {
         return;
     }
     
-    // Clear previous content
-    theatreList.innerHTML = '';
+    // DON'T clear here - it's already cleared in showTheatreSelection
+    // theatreList.innerHTML = '';
     
     if (!theatres || theatres.length === 0) {
         theatreList.innerHTML = `
@@ -1216,6 +1216,12 @@ function displayTheatresForSelection(theatres, isNearby = false) {
     
     // Insert into DOM
     theatreList.innerHTML = htmlContent;
+    theatreList.style.display = "flex"; // Force visibility
+    theatreList.style.flexWrap = "wrap";
+    theatreList.style.gap = "1rem";
+    
+    console.log('✅ HTML injected. theatreList.innerHTML length:', theatreList.innerHTML.length);
+    console.log('✅ theatreList.children.length:', theatreList.children.length);
     
     // ✅ Ensure modal is visible after rendering
     const modalElement = document.getElementById('theatreSelectionModal');
@@ -1227,6 +1233,8 @@ function displayTheatresForSelection(theatres, isNearby = false) {
         modalElement.classList.add('show');
         modalElement.style.display = 'block';
         document.body.classList.add('modal-open');
+        
+        console.log('✅ Modal forced to show');
     }
     
     console.log('✅ Theatre list rendered successfully with', theatres.length, 'entries.');

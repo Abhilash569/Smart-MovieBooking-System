@@ -410,7 +410,20 @@ body {
     min-height: 200px;
     max-height: none;
     overflow-y: visible;
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 1rem;
+    visibility: visible !important;
+    background-color: #f8f9fa;
+    padding: 10px;
+    color: #000;
+}
+
+#theatreList .card {
     display: block !important;
+    background: #ffffff !important;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     visibility: visible !important;
 }
 
