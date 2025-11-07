@@ -1128,8 +1128,7 @@ function getNearbyTheatres() {
     }
 }
 
-// Display theatres for selection
-// Display theatres for selection (Fixed Version)
+// --- ROBUST displayTheatresForSelection function ---
 function displayTheatresForSelection(theatres, isNearby = false) {
     const theatreList = document.getElementById('theatreList');
     
@@ -1141,108 +1140,127 @@ function displayTheatresForSelection(theatres, isNearby = false) {
     
     if (!theatreList) {
         console.error('ERROR: theatreList element not found!');
-        alert('Error: Theatre list container not found');
+        // show friendly UI fallback
+        const modalBody = document.querySelector('#theatreSelectionModal .modal-body');
+        if (modalBody) {
+            modalBody.innerHTML = '<div class="alert alert-danger">The theatre list container (id="theatreList") is missing from the modal markup.</div>';
+        }
         return;
     }
-    
-    // DON'T clear here - it's already cleared in showTheatreSelection
-    // theatreList.innerHTML = '';
     
     if (!theatres || theatres.length === 0) {
-        theatreList.innerHTML = `
-            <div class="col-12 text-center">
-                <div class="alert alert-warning shadow-sm">
-                    <i class="bi bi-exclamation-triangle me-2"></i>No theatres available nearby.
-                </div>
-            </div>`;
+        theatreList.innerHTML = '<div class="col-12"><div class="alert alert-warning">No theatres available. Please try again.</div></div>';
         return;
     }
     
-    console.log('Generating HTML for', theatres.length, 'theatres');
-    
-    const currentMovie = movies.find(m => m.id === currentMovieId);
-    const movieTitle = currentMovie ? currentMovie.title : 'Selected Movie';
-    
-    // Header section
-    const header = `
-        <div class="col-12 mb-3">
-            <div class="alert alert-info border-0 shadow-sm">
-                <h6 class="mb-1"><i class="bi bi-film"></i> ${movieTitle}</h6>
-                <small>Select a theatre to book tickets</small>
-            </div>
-        </div>`;
-    
-    // Title section
-    const title = `
-        <div class="col-12 mb-3">
-            <h6 class="${isNearby ? 'text-success' : 'text-primary'} fw-semibold">
-                <i class="bi bi-geo-alt-fill"></i> 
-                ${isNearby ? 'Nearby Theatres Showing This Movie' : 'Available Theatres'}
-            </h6>
-        </div>`;
-    
-    // Example show times
-    const showTimes = ['10:00 AM', '1:30 PM', '5:00 PM', '8:30 PM'];
-    
-    // Generate theatre cards with inline styles for visibility
-    let htmlContent = header + title;
-    theatres.forEach(theatre => {
-        htmlContent += `
-        <div class="col-md-6 mb-4" style="display:block !important; visibility:visible !important;">
-            <div class="card shadow-sm h-100" style="display:block !important; visibility:visible !important; background:#fff !important; border:1px solid #ddd !important; border-radius:8px;">
-                <div class="card-body" style="background:#fff !important; color:#000 !important; padding:1rem;">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="card-title mb-0" style="color:#2c3e50 !important; font-weight:600;">${theatre.name}</h6>
-                        ${isNearby ? '<span class="badge bg-success" style="background:#28a745 !important; color:#fff !important;">Nearby</span>' : ''}
-                    </div>
-                    <p class="text-muted small mb-2" style="color:#6c757d !important;">
-                        <i class="bi bi-geo-alt"></i> ${theatre.address || 'Address not available'}
-                    </p>
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        ${showTimes.map(time => `
-                            <button class="btn btn-sm btn-outline-primary" style="display:inline-block !important; visibility:visible !important;"
-                                onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${time}')">
-                                ${time}
-                            </button>`).join('')}
-                    </div>
-                    <button class="btn btn-primary w-100" style="display:block !important; visibility:visible !important; background:#007bff !important; color:#fff !important;"
-                        onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${showTimes[2]}')">
-                        <i class="bi bi-ticket-perforated"></i> Book Tickets
-                    </button>
-                </div>
-            </div>
-        </div>`;
-    });
-    
-    // Insert into DOM
-    theatreList.innerHTML = htmlContent;
-    theatreList.style.display = "flex"; // Force visibility
-    theatreList.style.flexWrap = "wrap";
-    theatreList.style.gap = "1rem";
-    
-    // Force display refresh and scroll into view
-    setTimeout(() => {
-        theatreList.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 300);
-    
-    console.log('✅ HTML injected. theatreList.innerHTML length:', theatreList.innerHTML.length);
-    console.log('✅ theatreList.children.length:', theatreList.children.length);
-    
-    // ✅ Ensure modal is visible after rendering
-    const modalElement = document.getElementById('theatreSelectionModal');
-    if (modalElement) {
-        const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-        modalInstance.show();
-        
-        // Fix Bootstrap display issues
-        modalElement.classList.add('show');
-        modalElement.style.display = 'block';
-        document.body.classList.add('modal-open');
-        
-        console.log('✅ Modal forced to show');
+    // Defensive: ensure theatres is an array
+    if (!Array.isArray(theatres)) {
+        try {
+            theatres = JSON.parse(theatres);
+        } catch (e) {
+            console.error('Could not parse theatres:', e);
+            theatreList.innerHTML = '<div class="col-12"><div class="alert alert-danger">Invalid theatre data.</div></div>';
+            return;
+        }
     }
     
-    console.log('✅ Theatre list rendered successfully with', theatres.length, 'entries.');
+    // Build header
+    const currentMovie = (typeof movies !== 'undefined') ? movies.find(m => m.id === currentMovieId) : null;
+    const movieTitle = currentMovie ? currentMovie.title : 'Selected Movie';
+    
+    const header = `
+        <div class="col-12 mb-3">
+            <div class="alert alert-info">
+                <h6 class="mb-1"><i class="bi bi-film"></i> ${escapeHtml(movieTitle)}</h6>
+                <p class="mb-0 small">Select a theatre to continue</p>
+            </div>
+        </div>`;
+    
+    const title = isNearby
+        ? '<div class="col-12"><h6 class="text-success mb-3"><i class="bi bi-geo-alt-fill"></i> Nearby Theatres Showing This Movie</h6></div>'
+        : '<div class="col-12"><h6 class="mb-3">Theatres Showing This Movie</h6></div>';
+    
+    // simple showtimes
+    const showTimes = ['10:00 AM', '1:30 PM', '5:00 PM', '8:30 PM'];
+    
+    const items = theatres.map(theatre => {
+        const name = escapeHtml(theatre.name || 'Unnamed Theatre');
+        const addr = escapeHtml(theatre.address || 'Address not available');
+        const id = Number(theatre.id || theatre.theatreId || Math.floor(Math.random()*1000000));
+        
+        return `
+        <div class="col-md-6 mb-3 theatre-card-item" data-theatre-id="${id}">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="card-title mb-0">${name}</h6>
+                        ${isNearby ? '<span class="badge bg-success">Nearby</span>' : ''}
+                    </div>
+                    <p class="card-text small text-muted mb-3">
+                        <i class="bi bi-geo-alt"></i> ${addr}
+                    </p>
+                    <div class="mb-2">
+                        <small class="text-muted d-block mb-2"><i class="bi bi-clock"></i> Show Times:</small>
+                        <div class="d-flex flex-wrap gap-2">
+                            ${showTimes.map(time => `<button type="button" class="btn btn-sm btn-outline-primary showtime-btn" data-theatre-id="${id}" data-show="${time}">${time}</button>`).join('')}
+                        </div>
+                    </div>
+                    <div class="mt-auto">
+                        <button type="button" class="btn btn-primary w-100 book-btn" data-theatre-id="${id}"><i class="bi bi-ticket-perforated"></i> Book Tickets</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    }).join('');
+    
+    const htmlContent = header + title + items;
+    
+    // Inject HTML safely
+    theatreList.innerHTML = htmlContent;
+    
+    // Attach event listeners defensively
+    theatreList.querySelectorAll('.showtime-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const tid = btn.getAttribute('data-theatre-id');
+            const show = btn.getAttribute('data-show');
+            selectTheatreForBooking(tid, theatreList.querySelector(`[data-theatre-id="${tid}"] .card-title`)?.textContent || 'Theatre', show);
+        });
+    });
+    theatreList.querySelectorAll('.book-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const tid = btn.getAttribute('data-theatre-id');
+            selectTheatreForBooking(tid, theatreList.querySelector(`[data-theatre-id="${tid}"] .card-title`)?.textContent || 'Theatre', showTimes[2]);
+        });
+    });
+    
+    console.log('HTML injected. theatreList.innerHTML length:', theatreList.innerHTML.length);
+    console.log('theatreList.children.length:', theatreList.children.length);
+    
+    // Ensure modal is visible
+    try {
+        const modalEl = document.getElementById('theatreSelectionModal');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+            console.log('Modal forced to show');
+        }
+    } catch (e) {
+        console.warn('Could not force show modal:', e);
+    }
+}
+
+// small HTML escape to avoid accidental markup injection:
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 // Global variable for show time
