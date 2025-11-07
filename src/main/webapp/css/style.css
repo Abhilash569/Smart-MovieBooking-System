@@ -396,14 +396,22 @@ body {
 
 
 /* Theatre Selection Modal Styles */
+#theatreSelectionModal .modal-dialog {
+    max-width: 900px;
+}
+
 #theatreSelectionModal .modal-body {
     max-height: 70vh;
     overflow-y: auto;
+    padding: 20px;
 }
 
 #theatreList {
-    max-height: 60vh;
-    overflow-y: auto;
+    min-height: 200px;
+    max-height: none;
+    overflow-y: visible;
+    display: block !important;
+    visibility: visible !important;
 }
 
 .theatre-card {
