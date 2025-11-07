@@ -4,12 +4,14 @@ A full-stack web application for browsing movies, finding nearby theatres, and b
 
 ## Features
 
-- 🎬 Browse popular movies with details from The MovieDB API
-- 🗺️ Find nearby theatres using Google Maps integration
+- 🎬 Browse movies (Now Playing, Popular, Upcoming, Top Rated) from The MovieDB API
+- 🔍 Search and filter movies by language and genre
+- 🗺️ Find nearby theatres using Google Maps integration (40+ theatres across India)
 - 🎫 Interactive seat selection and booking
+- 📋 **NEW:** My Bookings - View, modify, and cancel bookings
 - 👤 User authentication (Login/Signup)
 - 📱 Responsive design for mobile and desktop
-- 💾 MySQL database for data persistence
+- 💾 H2 in-memory database (no installation required!)
 
 ## Technology Stack
 
@@ -25,7 +27,7 @@ A full-stack web application for browsing movies, finding nearby theatres, and b
 - Maven 3.8+
 
 ### Database
-- MySQL 8.0+
+- H2 In-Memory Database (no installation required!)
 - JDBC for database connectivity
 
 ### External APIs
@@ -37,9 +39,10 @@ A full-stack web application for browsing movies, finding nearby theatres, and b
 Before running this application, ensure you have the following installed:
 
 - **Java Development Kit (JDK) 17 or higher**
-- **Apache Maven 3.8+**
-- **MySQL 8.0+**
+- **Apache Maven 3.6+**
 - **Apache Tomcat 10.1+**
+
+**Note:** No database installation required! The application uses H2 in-memory database.
 
 ## Setup Instructions
 
@@ -50,37 +53,9 @@ git clone <repository-url>
 cd smart-movie-booking-system
 ```
 
-### 2. Database Setup
+### 2. Configure API Keys (Optional)
 
-1. Start your MySQL server
-
-2. Run the initialization script:
-```bash
-mysql -u root -p < init.sql
-```
-
-This will:
-- Create the `smartmoviebooking` database
-- Create all required tables (users, movies, theatres, bookings)
-- Insert sample theatre data
-- Create a demo user account
-
-### 3. Configure Database Connection
-
-Update the database credentials in `src/main/java/com/smartbooking/dao/DBConnection.java`:
-
-```java
-private static final String URL = "jdbc:mysql://localhost:3306/smartmoviebooking";
-private static final String USER = "root";
-private static final String PASSWORD = "your_password"; // Update this
-```
-
-Or set the `DB_PASSWORD` environment variable:
-```bash
-export DB_PASSWORD=your_password
-```
-
-### 4. Configure API Keys
+The application comes with working API keys, but you can use your own:
 
 #### The MovieDB API Key
 
@@ -103,7 +78,7 @@ private static final String MOVIEDB_API_KEY = "YOUR_MOVIE_API_KEY";
 const GOOGLE_API_KEY = "YOUR_GOOGLE_API_KEY";
 ```
 
-### 5. Build the Project
+### 3. Build the Project
 
 ```bash
 mvn clean package
@@ -111,7 +86,7 @@ mvn clean package
 
 This will create a WAR file at `target/smart-booking.war`
 
-### 6. Deploy to Tomcat
+### 4. Deploy to Tomcat
 
 1. Copy the WAR file to Tomcat's webapps directory:
 ```bash
@@ -126,7 +101,7 @@ cp target/smart-booking.war /path/to/tomcat/webapps/
 
 3. Wait for Tomcat to deploy the application
 
-### 7. Access the Application
+### 5. Access the Application
 
 Open your browser and navigate to:
 ```
@@ -142,26 +117,33 @@ Use these credentials to test the application:
 
 ## Project Structure
 
+For a detailed project structure with all files and components, see [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)
+
 ```
 smart-movie-booking-system/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/smartbooking/
-│   │   │   ├── controller/      # Servlets
-│   │   │   ├── model/           # Data models
-│   │   │   ├── dao/             # Data Access Objects
-│   │   │   └── service/         # External API services
+│   │   │   ├── controller/      # 5 Servlets (Booking, Login, Movie, Theatre, Home)
+│   │   │   ├── model/           # 4 Data models (User, Movie, Theatre, Booking)
+│   │   │   ├── dao/             # 5 Data Access Objects + DBConnection
+│   │   │   └── service/         # 2 External API services (MovieDB, Google Maps)
 │   │   └── webapp/
 │   │       ├── WEB-INF/
 │   │       │   └── web.xml      # Servlet configuration
 │   │       ├── css/
 │   │       │   └── style.css    # Custom styles
 │   │       ├── js/
-│   │       │   └── app.js       # Frontend JavaScript
-│   │       └── index.jsp        # Main page
-├── init.sql                     # Database initialization
+│   │       │   ├── app.js       # Main JavaScript (with booking management)
+│   │       │   └── maps-fix.js  # Google Maps helper
+│   │       └── index.jsp        # Single-page application
+├── init.sql                     # Database initialization (H2)
 ├── pom.xml                      # Maven configuration
-└── README.md                    # This file
+├── README.md                    # This file
+├── DOCUMENTATION.md             # Complete usage guide
+├── BOOKING_MANAGEMENT.md        # Booking features documentation
+├── PROJECT_STRUCTURE.md         # Detailed project structure
+└── STATUS.md                    # Current status
 ```
 
 ## API Endpoints
@@ -178,7 +160,10 @@ smart-movie-booking-system/
 
 ### Booking
 - `GET /book` - Get occupied seats (params: movieId, theatreId)
+- `GET /book?action=myBookings` - Get user's bookings
 - `POST /book` - Create booking (params: movieId, theatreId, seats)
+- `PUT /book` - Modify booking (params: bookingId, seats)
+- `DELETE /book` - Cancel booking (params: bookingId)
 
 ## Database Schema
 
@@ -192,14 +177,14 @@ smart-movie-booking-system/
 - id, name, address, latitude, longitude, created_at
 
 ### bookings
-- id, user_id, movie_id, theatre_id, seats, total_price, booked_at
+- id, user_id, movie_id, theatre_id, seats, total_price, status, booked_at
 
 ## Troubleshooting
 
-### Database Connection Issues
-- Verify MySQL is running
-- Check database credentials in DBConnection.java
-- Ensure the database exists: `SHOW DATABASES;`
+### Database Issues
+- H2 database is in-memory and resets on server restart
+- Demo user is auto-created on startup
+- 40+ theatres are pre-populated automatically
 
 ### Tomcat Deployment Issues
 - Check Tomcat logs: `tail -f /path/to/tomcat/logs/catalina.out`
