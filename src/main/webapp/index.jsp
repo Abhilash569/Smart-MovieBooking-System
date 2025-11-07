@@ -327,7 +327,90 @@
                     </div>
                     <div class="text-center">
                         <h5>Total Price: ₹<span id="totalPrice">0</span></h5>
-                        <button class="btn btn-success btn-lg mt-3" onclick="confirmBooking()">Confirm Booking</button>
+                        <button class="btn btn-success btn-lg mt-3" onclick="proceedToPayment()">Proceed to Payment</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6>Booking Summary</h6>
+                        <p class="mb-1"><strong>Seats:</strong> <span id="paymentSeats"></span></p>
+                        <p class="mb-1"><strong>Total Amount:</strong> ₹<span id="paymentAmount"></span></p>
+                    </div>
+                    
+                    <h6 class="mb-3">Select Payment Method</h6>
+                    <div class="payment-options">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="upi" value="UPI" checked>
+                            <label class="form-check-label" for="upi">
+                                <i class="bi bi-phone"></i> UPI (Google Pay, PhonePe, Paytm)
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="card" value="Card">
+                            <label class="form-check-label" for="card">
+                                <i class="bi bi-credit-card"></i> Credit/Debit Card
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="netbanking" value="Net Banking">
+                            <label class="form-check-label" for="netbanking">
+                                <i class="bi bi-bank"></i> Net Banking
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="wallet" value="Wallet">
+                            <label class="form-check-label" for="wallet">
+                                <i class="bi bi-wallet2"></i> Wallet
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-success btn-lg" onclick="processPayment()">
+                            <i class="bi bi-lock"></i> Pay ₹<span id="payButtonAmount"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Modal -->
+    <div class="modal fade" id="ticketModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-check-circle"></i> Booking Confirmed!</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="ticket-container p-4">
+                        <h4 class="mb-3">Your E-Ticket</h4>
+                        <div id="ticketDetails" class="mb-4">
+                            <!-- Ticket details will be populated here -->
+                        </div>
+                        <div id="qrCode" class="mb-3">
+                            <!-- QR code will be generated here -->
+                        </div>
+                        <p class="text-muted small">Show this QR code at the theatre entrance</p>
+                        <button class="btn btn-primary mt-3" onclick="downloadTicket()">
+                            <i class="bi bi-download"></i> Download Ticket
+                        </button>
+                        <button class="btn btn-outline-secondary mt-3" onclick="viewMyBookings()">
+                            View My Bookings
+                        </button>
                     </div>
                 </div>
             </div>
@@ -336,6 +419,9 @@
     
     <!-- Bootstrap 5.3 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- QR Code Generator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <!-- Google Maps API with callback -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCdAOE-KDvjnttCz_VBSfRWipG0sdcCu7w&callback=initMap" async defer></script>

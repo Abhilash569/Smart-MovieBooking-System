@@ -301,3 +301,95 @@ body {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+
+/* Payment Modal Styles */
+.payment-options .form-check {
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-options .form-check:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.payment-options .form-check-input:checked + .form-check-label {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.payment-options .form-check-label {
+    cursor: pointer;
+    width: 100%;
+    margin-left: 10px;
+}
+
+.payment-options .form-check-label i {
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+/* Ticket Modal Styles */
+.ticket-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+}
+
+.ticket-container h4 {
+    font-weight: 700;
+}
+
+.ticket-container .border {
+    background: white;
+    color: #333;
+}
+
+#qrCode {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+}
+
+#qrCode img {
+    display: block;
+    margin: 0 auto;
+}
+
+/* Payment Button Animation */
+.btn-success:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+
+/* Ticket Download Button */
+.ticket-container .btn {
+    margin: 5px;
+}
+
+/* Modal Backdrop */
+.modal-backdrop.show {
+    opacity: 0.7;
+}
+
+/* Success Icon Animation */
+@keyframes checkmark {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.modal-header.bg-success i {
+    animation: checkmark 0.5s ease;
+}

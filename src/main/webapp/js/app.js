@@ -818,3 +818,171 @@ window.updateNavbar = function() {
         myBookingsNav.style.display = 'none';
     }
 };
+
+
+// Payment and Ticket Generation Functions
+
+// Proceed to payment
+function proceedToPayment() {
+    if (selectedSeats.length === 0) {
+        alert('Please select at least one seat');
+        return;
+    }
+    
+    const totalPrice = selectedSeats.length * 150;
+    
+    // Update payment modal
+    document.getElementById('paymentSeats').textContent = selectedSeats.join(', ');
+    document.getElementById('paymentAmount').textContent = totalPrice;
+    document.getElementById('payButtonAmount').textContent = totalPrice;
+    
+    // Hide seat selection modal and show payment modal
+    bootstrap.Modal.getInstance(document.getElementById('seatSelectionModal')).hide();
+    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    paymentModal.show();
+}
+
+// Process payment
+function processPayment() {
+    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+    
+    // Show loading
+    const payButton = event.target;
+    const originalText = payButton.innerHTML;
+    payButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+    payButton.disabled = true;
+    
+    // Simulate payment processing
+    setTimeout(() => {
+        // Create booking after payment
+        confirmBookingWithPayment(paymentMethod);
+    }, 1500);
+}
+
+// Confirm booking with payment
+function confirmBookingWithPayment(paymentMethod) {
+    if (!currentUser) {
+        alert('Please login to book tickets');
+        showLogin();
+        return;
+    }
+    
+    if (selectedSeats.length === 0) {
+        alert('Please select at least one seat');
+        return;
+    }
+    
+    const seats = selectedSeats.join(',');
+    
+    fetch('/smart-booking/book', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `movieId=${currentMovieId}&theatreId=${currentTheatreId}&seats=${encodeURIComponent(seats)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hide payment modal
+            bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+            
+            // Generate and show ticket
+            generateTicket({
+                bookingId: Date.now(), // Use timestamp as booking ID for demo
+                seats: selectedSeats,
+                totalPrice: data.totalPrice,
+                paymentMethod: paymentMethod,
+                movieId: currentMovieId,
+                theatreId: currentTheatreId
+            });
+            
+            // Reset selection
+            selectedSeats = [];
+        } else {
+            alert(data.message || 'Booking failed. Please try again.');
+            // Re-enable pay button
+            const payButton = document.querySelector('#paymentModal .btn-success');
+            payButton.innerHTML = '<i class="bi bi-lock"></i> Pay ₹' + document.getElementById('payButtonAmount').textContent;
+            payButton.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error creating booking:', error);
+        alert('An error occurred while processing your booking');
+        // Re-enable pay button
+        const payButton = document.querySelector('#paymentModal .btn-success');
+        payButton.innerHTML = '<i class="bi bi-lock"></i> Pay ₹' + document.getElementById('payButtonAmount').textContent;
+        payButton.disabled = false;
+    });
+}
+
+// Generate ticket with QR code
+function generateTicket(bookingData) {
+    const ticketDetails = document.getElementById('ticketDetails');
+    const currentDate = new Date().toLocaleString();
+    
+    ticketDetails.innerHTML = `
+        <div class="border rounded p-3 mb-3">
+            <p class="mb-2"><strong>Booking ID:</strong> #${bookingData.bookingId}</p>
+            <p class="mb-2"><strong>Movie ID:</strong> ${bookingData.movieId}</p>
+            <p class="mb-2"><strong>Theatre ID:</strong> ${bookingData.theatreId}</p>
+            <p class="mb-2"><strong>Seats:</strong> ${bookingData.seats.join(', ')}</p>
+            <p class="mb-2"><strong>Total Amount:</strong> ₹${bookingData.totalPrice}</p>
+            <p class="mb-2"><strong>Payment Method:</strong> ${bookingData.paymentMethod}</p>
+            <p class="mb-2"><strong>Booking Time:</strong> ${currentDate}</p>
+            <p class="mb-0 text-success"><strong>Status:</strong> CONFIRMED</p>
+        </div>
+    `;
+    
+    // Generate QR code
+    const qrContainer = document.getElementById('qrCode');
+    qrContainer.innerHTML = ''; // Clear previous QR code
+    
+    const qrData = JSON.stringify({
+        bookingId: bookingData.bookingId,
+        movieId: bookingData.movieId,
+        theatreId: bookingData.theatreId,
+        seats: bookingData.seats.join(','),
+        amount: bookingData.totalPrice,
+        date: currentDate
+    });
+    
+    new QRCode(qrContainer, {
+        text: qrData,
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    
+    // Show ticket modal
+    const ticketModal = new bootstrap.Modal(document.getElementById('ticketModal'));
+    ticketModal.show();
+}
+
+// Download ticket
+function downloadTicket() {
+    // Create a simple text version of the ticket
+    const ticketDetails = document.getElementById('ticketDetails').innerText;
+    const ticketText = `SMART MOVIE BOOKING SYSTEM\n\nE-TICKET\n\n${ticketDetails}\n\nThank you for booking with us!`;
+    
+    const blob = new Blob([ticketText], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ticket-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    alert('Ticket downloaded! You can also take a screenshot of the QR code.');
+}
+
+// View my bookings from ticket modal
+function viewMyBookings() {
+    bootstrap.Modal.getInstance(document.getElementById('ticketModal')).hide();
+    showSection('myBookings');
+}
