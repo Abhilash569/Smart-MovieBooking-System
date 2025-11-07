@@ -1129,6 +1129,7 @@ function getNearbyTheatres() {
 }
 
 // Display theatres for selection
+// Display theatres for selection (Fixed Version)
 function displayTheatresForSelection(theatres, isNearby = false) {
     const theatreList = document.getElementById('theatreList');
     
@@ -1144,67 +1145,91 @@ function displayTheatresForSelection(theatres, isNearby = false) {
         return;
     }
     
+    // Clear previous content
+    theatreList.innerHTML = '';
+    
     if (!theatres || theatres.length === 0) {
-        console.log('No theatres to display');
-        theatreList.innerHTML = '<div class="col-12"><div class="alert alert-warning">No theatres available. Please try again.</div></div>';
+        theatreList.innerHTML = `
+            <div class="col-12 text-center">
+                <div class="alert alert-warning shadow-sm">
+                    <i class="bi bi-exclamation-triangle me-2"></i>No theatres available nearby.
+                </div>
+            </div>`;
         return;
     }
     
     console.log('Generating HTML for', theatres.length, 'theatres');
-    console.log('Sample theatre:', JSON.stringify(theatres[0]));
     
-    // Get current movie details
     const currentMovie = movies.find(m => m.id === currentMovieId);
     const movieTitle = currentMovie ? currentMovie.title : 'Selected Movie';
     
+    // Header section
     const header = `
         <div class="col-12 mb-3">
-            <div class="alert alert-info">
-                <h6 class="mb-2"><i class="bi bi-film"></i> ${movieTitle}</h6>
-                <p class="mb-0 small">Select a theatre to book tickets</p>
+            <div class="alert alert-info border-0 shadow-sm">
+                <h6 class="mb-1"><i class="bi bi-film"></i> ${movieTitle}</h6>
+                <small>Select a theatre to book tickets</small>
             </div>
-        </div>
-    `;
+        </div>`;
     
-    const title = isNearby ? '<div class="col-12"><h6 class="text-success mb-3"><i class="bi bi-geo-alt-fill"></i> Nearby Theatres Showing This Movie</h6></div>' : '<div class="col-12"><h6 class="mb-3">Theatres Showing This Movie</h6></div>';
+    // Title section
+    const title = `
+        <div class="col-12 mb-3">
+            <h6 class="${isNearby ? 'text-success' : 'text-primary'} fw-semibold">
+                <i class="bi bi-geo-alt-fill"></i> 
+                ${isNearby ? 'Nearby Theatres Showing This Movie' : 'Available Theatres'}
+            </h6>
+        </div>`;
     
-    // Generate show times (simplified - same times for all theatres)
+    // Example show times
     const showTimes = ['10:00 AM', '1:30 PM', '5:00 PM', '8:30 PM'];
     
-    const htmlContent = header + title + theatres.map(theatre => `
-        <div class="col-md-6 mb-3">
-            <div class="card theatre-card h-100">
+    // Generate theatre cards
+    let htmlContent = header + title;
+    theatres.forEach(theatre => {
+        htmlContent += `
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <h6 class="card-title mb-0">${theatre.name}</h6>
                         ${isNearby ? '<span class="badge bg-success">Nearby</span>' : ''}
                     </div>
-                    <p class="card-text small text-muted mb-3">
-                        <i class="bi bi-geo-alt"></i> ${theatre.address}
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt"></i> ${theatre.address || 'Address not available'}
                     </p>
-                    <div class="mb-3">
-                        <small class="text-muted d-block mb-2"><i class="bi bi-clock"></i> Show Times:</small>
-                        <div class="d-flex flex-wrap gap-2">
-                            ${showTimes.map(time => `
-                                <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${time}')">
-                                    ${time}
-                                </button>
-                            `).join('')}
-                        </div>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        ${showTimes.map(time => `
+                            <button class="btn btn-sm btn-outline-primary"
+                                onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${time}')">
+                                ${time}
+                            </button>`).join('')}
                     </div>
-                    <button class="btn btn-primary w-100 mt-2" onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${showTimes[2]}')">
+                    <button class="btn btn-primary w-100"
+                        onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${showTimes[2]}')">
                         <i class="bi bi-ticket-perforated"></i> Book Tickets
                     </button>
                 </div>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    });
     
-    console.log('HTML content length:', htmlContent.length);
-    console.log('Setting innerHTML...');
+    // Insert into DOM
     theatreList.innerHTML = htmlContent;
-    console.log('innerHTML set successfully!');
-    console.log('theatreList children count:', theatreList.children.length);
+    
+    // ✅ Ensure modal is visible after rendering
+    const modalElement = document.getElementById('theatreSelectionModal');
+    if (modalElement) {
+        const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+        modalInstance.show();
+        
+        // Fix Bootstrap display issues
+        modalElement.classList.add('show');
+        modalElement.style.display = 'block';
+        document.body.classList.add('modal-open');
+    }
+    
+    console.log('✅ Theatre list rendered successfully with', theatres.length, 'entries.');
 }
 
 // Global variable for show time
