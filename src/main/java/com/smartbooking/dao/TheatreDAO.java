@@ -71,12 +71,14 @@ public class TheatreDAO {
     public List<Theatre> findNearby(double lat, double lng, double radius) {
         List<Theatre> theatres = new ArrayList<>();
         // Haversine formula in SQL to calculate distance
-        String sql = "SELECT *, " +
+        String sql = "SELECT id, name, address, latitude, longitude, " +
                      "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * " +
                      "cos(radians(longitude) - radians(?)) + sin(radians(?)) * " +
                      "sin(radians(latitude)))) AS distance " +
                      "FROM theatres " +
-                     "HAVING distance < ? " +
+                     "WHERE (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * " +
+                     "cos(radians(longitude) - radians(?)) + sin(radians(?)) * " +
+                     "sin(radians(latitude)))) < ? " +
                      "ORDER BY distance";
         
         try (Connection conn = DBConnection.getConnection();
@@ -85,7 +87,10 @@ public class TheatreDAO {
             stmt.setDouble(1, lat);
             stmt.setDouble(2, lng);
             stmt.setDouble(3, lat);
-            stmt.setDouble(4, radius);
+            stmt.setDouble(4, lat);
+            stmt.setDouble(5, lng);
+            stmt.setDouble(6, lat);
+            stmt.setDouble(7, radius);
             
             ResultSet rs = stmt.executeQuery();
             

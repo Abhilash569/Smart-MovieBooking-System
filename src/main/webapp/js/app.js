@@ -1024,13 +1024,13 @@ function getNearbyTheatres() {
                 
                 statusEl.innerHTML = '<span class="text-success">✓ Location found</span>';
                 
-                // Fetch nearby theatres
+                // Fetch nearby theatres (20 km radius)
                 fetch('/smart-booking/theatres', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `latitude=${lat}&longitude=${lng}&radius=10`
+                    body: `latitude=${lat}&longitude=${lng}&radius=20`
                 })
                 .then(response => response.json())
                 .then(theatres => {
