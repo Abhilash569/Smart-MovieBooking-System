@@ -1084,6 +1084,10 @@ function getNearbyTheatres() {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 
+                // Store user location for distance calculation
+                userLatitude = lat;
+                userLongitude = lng;
+                
                 statusEl.innerHTML = '<span class="text-success">✓ Location found</span>';
                 
                 // Fetch nearby theatres (20 km radius)
@@ -1128,112 +1132,106 @@ function getNearbyTheatres() {
     }
 }
 
-// Display theatres for selection
-// Display theatres for selection (Fixed Version)
+// Display theatres for selection with distance
 function displayTheatresForSelection(theatres, isNearby = false) {
     const theatreList = document.getElementById('theatreList');
     
-    console.log('=== DISPLAY THEATRES DEBUG ===');
-    console.log('Theatres array:', theatres);
-    console.log('Number of theatres:', theatres ? theatres.length : 0);
-    console.log('theatreList element:', theatreList);
-    console.log('isNearby:', isNearby);
+    console.log('=== DISPLAY THEATRES WITH DISTANCE ===');
+    console.log('Theatres:', theatres ? theatres.length : 0);
+    console.log('User location:', userLatitude, userLongitude);
     
     if (!theatreList) {
-        console.error('ERROR: theatreList element not found!');
-        alert('Error: Theatre list container not found');
+        console.error('ERROR: theatreList not found!');
         return;
     }
-    
-    // Clear previous content
-    theatreList.innerHTML = '';
     
     if (!theatres || theatres.length === 0) {
-        theatreList.innerHTML = `
-            <div class="col-12 text-center">
-                <div class="alert alert-warning shadow-sm">
-                    <i class="bi bi-exclamation-triangle me-2"></i>No theatres available nearby.
-                </div>
-            </div>`;
+        theatreList.innerHTML = '<div style="padding:20px;text-align:center;">No theatres available</div>';
         return;
     }
     
-    console.log('Generating HTML for', theatres.length, 'theatres');
+    // Calculate distances and sort by distance if user location is available
+    if (userLatitude && userLongitude) {
+        theatres.forEach(theatre => {
+            if (theatre.latitude && theatre.longitude) {
+                theatre.distance = calculateDistance(userLatitude, userLongitude, theatre.latitude, theatre.longitude);
+            }
+        });
+        // Sort by distance (nearest first)
+        theatres.sort((a, b) => (parseFloat(a.distance) || 999) - (parseFloat(b.distance) || 999));
+    }
+    
+    // Simple HTML without complex Bootstrap classes
+    let html = '<div style="padding:10px;">';
     
     const currentMovie = movies.find(m => m.id === currentMovieId);
     const movieTitle = currentMovie ? currentMovie.title : 'Selected Movie';
     
-    // Header section
-    const header = `
-        <div class="col-12 mb-3">
-            <div class="alert alert-info border-0 shadow-sm">
-                <h6 class="mb-1"><i class="bi bi-film"></i> ${movieTitle}</h6>
-                <small>Select a theatre to book tickets</small>
-            </div>
-        </div>`;
+    html += `<div style="background:#e7f3ff;padding:15px;border-radius:8px;margin-bottom:20px;">
+        <h6 style="margin:0 0 5px 0;">🎬 ${movieTitle}</h6>
+        <small>Select a theatre and show time</small>
+    </div>`;
     
-    // Title section
-    const title = `
-        <div class="col-12 mb-3">
-            <h6 class="${isNearby ? 'text-success' : 'text-primary'} fw-semibold">
-                <i class="bi bi-geo-alt-fill"></i> 
-                ${isNearby ? 'Nearby Theatres Showing This Movie' : 'Available Theatres'}
-            </h6>
-        </div>`;
+    html += `<h6 style="color:#28a745;margin-bottom:15px;">📍 ${isNearby ? 'Nearby Theatres' : 'All Theatres'} (${theatres.length})</h6>`;
     
-    // Example show times
     const showTimes = ['10:00 AM', '1:30 PM', '5:00 PM', '8:30 PM'];
     
-    // Generate theatre cards
-    let htmlContent = header + title;
     theatres.forEach(theatre => {
-        htmlContent += `
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="card-title mb-0">${theatre.name}</h6>
-                        ${isNearby ? '<span class="badge bg-success">Nearby</span>' : ''}
-                    </div>
-                    <p class="text-muted small mb-2">
-                        <i class="bi bi-geo-alt"></i> ${theatre.address || 'Address not available'}
-                    </p>
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        ${showTimes.map(time => `
-                            <button class="btn btn-sm btn-outline-primary"
-                                onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${time}')">
-                                ${time}
-                            </button>`).join('')}
-                    </div>
-                    <button class="btn btn-primary w-100"
-                        onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${showTimes[2]}')">
-                        <i class="bi bi-ticket-perforated"></i> Book Tickets
-                    </button>
+        // Build distance badge if available
+        const distanceBadge = theatre.distance 
+            ? `<span style="background:#17a2b8;color:white;padding:2px 8px;border-radius:12px;font-size:12px;margin-left:5px;">📏 ${theatre.distance} km</span>`
+            : '';
+        
+        html += `
+        <div style="border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:15px;background:white;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+                <strong>${theatre.name}</strong>
+                <div>
+                    ${isNearby ? '<span style="background:#28a745;color:white;padding:2px 8px;border-radius:12px;font-size:12px;">Nearby</span>' : ''}
+                    ${distanceBadge}
                 </div>
             </div>
+            <div style="color:#666;font-size:14px;margin-bottom:10px;">
+                📍 ${theatre.address}
+            </div>
+            <div style="margin-bottom:10px;">
+                <small style="color:#666;">⏰ Show Times:</small><br>
+                ${showTimes.map(time => `
+                    <button class="btn btn-sm btn-outline-primary" style="margin:5px 5px 0 0;"
+                        onclick="selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${time}')">
+                        ${time}
+                    </button>`).join('')}
+            </div>
+            <button class="btn btn-primary w-100"
+                onclick="selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${showTimes[2]}')">
+                🎟️ Book Tickets
+            </button>
         </div>`;
     });
     
-    // Insert into DOM
-    theatreList.innerHTML = htmlContent;
+    html += '</div>';
     
-    // ✅ Ensure modal is visible after rendering
-    const modalElement = document.getElementById('theatreSelectionModal');
-    if (modalElement) {
-        const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-        modalInstance.show();
-        
-        // Fix Bootstrap display issues
-        modalElement.classList.add('show');
-        modalElement.style.display = 'block';
-        document.body.classList.add('modal-open');
-    }
-    
-    console.log('✅ Theatre list rendered successfully with', theatres.length, 'entries.');
+    theatreList.innerHTML = html;
+    console.log('✅ Theatres displayed with distances:', theatres.length);
 }
 
 // Global variable for show time
 let selectedShowTime = null;
+let userLatitude = null;
+let userLongitude = null;
+
+// Calculate distance between two coordinates (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+    return distance.toFixed(1); // Return distance in km with 1 decimal
+}
 
 // Select theatre and proceed to seat selection
 function selectTheatreForBooking(theatreId, theatreName, showTime) {
