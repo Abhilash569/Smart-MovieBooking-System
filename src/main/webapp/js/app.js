@@ -1132,17 +1132,26 @@ function getNearbyTheatres() {
 function displayTheatresForSelection(theatres, isNearby = false) {
     const theatreList = document.getElementById('theatreList');
     
-    console.log('displayTheatresForSelection called with:', theatres);
+    console.log('=== DISPLAY THEATRES DEBUG ===');
+    console.log('Theatres array:', theatres);
+    console.log('Number of theatres:', theatres ? theatres.length : 0);
     console.log('theatreList element:', theatreList);
+    console.log('isNearby:', isNearby);
     
-    if (!theatres || theatres.length === 0) {
-        console.log('No theatres to display');
-        theatreList.innerHTML = '<div class="col-12"><div class="alert alert-info">No theatres available. Please try again.</div></div>';
+    if (!theatreList) {
+        console.error('ERROR: theatreList element not found!');
+        alert('Error: Theatre list container not found');
         return;
     }
     
-    console.log('Displaying', theatres.length, 'theatres');
-    console.log('First theatre:', theatres[0]);
+    if (!theatres || theatres.length === 0) {
+        console.log('No theatres to display');
+        theatreList.innerHTML = '<div class="col-12"><div class="alert alert-warning">No theatres available. Please try again.</div></div>';
+        return;
+    }
+    
+    console.log('Generating HTML for', theatres.length, 'theatres');
+    console.log('Sample theatre:', JSON.stringify(theatres[0]));
     
     // Get current movie details
     const currentMovie = movies.find(m => m.id === currentMovieId);
@@ -1162,7 +1171,7 @@ function displayTheatresForSelection(theatres, isNearby = false) {
     // Generate show times (simplified - same times for all theatres)
     const showTimes = ['10:00 AM', '1:30 PM', '5:00 PM', '8:30 PM'];
     
-    theatreList.innerHTML = header + title + theatres.map(theatre => `
+    const htmlContent = header + title + theatres.map(theatre => `
         <div class="col-md-6 mb-3">
             <div class="card theatre-card h-100">
                 <div class="card-body">
@@ -1190,6 +1199,12 @@ function displayTheatresForSelection(theatres, isNearby = false) {
             </div>
         </div>
     `).join('');
+    
+    console.log('HTML content length:', htmlContent.length);
+    console.log('Setting innerHTML...');
+    theatreList.innerHTML = htmlContent;
+    console.log('innerHTML set successfully!');
+    console.log('theatreList children count:', theatreList.children.length);
 }
 
 // Global variable for show time
