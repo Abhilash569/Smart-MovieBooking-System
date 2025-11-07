@@ -305,6 +305,29 @@
         </div>
     </section>
 
+    <!-- Theatre Selection Modal -->
+    <div class="modal fade" id="theatreSelectionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Theatre</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <button class="btn btn-primary" onclick="getNearbyTheatres()">
+                            <i class="bi bi-geo-alt"></i> Find Nearby Theatres
+                        </button>
+                        <span id="locationStatus" class="ms-2 text-muted"></span>
+                    </div>
+                    <div id="theatreList" class="row">
+                        <!-- Theatres will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Seat Selection Modal -->
     <div class="modal fade" id="seatSelectionModal" tabindex="-1">
         <div class="modal-dialog modal-lg">

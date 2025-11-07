@@ -105,6 +105,15 @@ public class DBConnection {
                     "('AMB Cinemas', 'Gachibowli, Hyderabad', 17.3850, 78.4867), " +
                     "('Cinepolis Mantra', 'Banjara Hills, Hyderabad', 17.4239, 78.4738), " +
                     "('PVR Next Galleria', 'Punjagutta, Hyderabad', 17.4065, 78.4772), " +
+                    // Hyderabad - Bachupally, Kukatpally, KPHB
+                    "('PVR Kukatpally', 'Kukatpally, Hyderabad', 17.4849, 78.3915), " +
+                    "('INOX Kukatpally', 'Kukatpally Housing Board, Hyderabad', 17.4945, 78.3869), " +
+                    "('Asian Cinemas', 'KPHB Colony, Hyderabad', 17.4920, 78.3910), " +
+                    "('Cinepolis Bachupally', 'Bachupally, Hyderabad', 17.5450, 78.3850), " +
+                    "('Prasads Multiplex', 'KPHB, Hyderabad', 17.4890, 78.3920), " +
+                    "('Miraj Cinemas', 'Kukatpally, Hyderabad', 17.4870, 78.3895), " +
+                    "('PVR KPHB', 'KPHB Phase 1, Hyderabad', 17.4910, 78.3905), " +
+                    "('Cinepolis Miyapur', 'Miyapur, Hyderabad', 17.4950, 78.3580), " +
                     // Chennai
                     "('PVR Grand Galada', 'Pallavaram, Chennai', 13.0827, 80.2707), " +
                     "('INOX Escape', 'Express Avenue, Chennai', 13.0569, 80.2425), " +

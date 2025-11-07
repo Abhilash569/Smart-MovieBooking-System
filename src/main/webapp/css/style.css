@@ -393,3 +393,39 @@ body {
 .modal-header.bg-success i {
     animation: checkmark 0.5s ease;
 }
+
+
+/* Theatre Selection Modal Styles */
+.theatre-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #e0e0e0;
+}
+
+.theatre-card:hover {
+    border-color: #007bff;
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.2);
+}
+
+.theatre-card .card-title {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.theatre-card .card-text {
+    color: #666;
+}
+
+.theatre-card .badge {
+    font-size: 0.75rem;
+}
+
+#locationStatus {
+    font-size: 0.9rem;
+}
+
+#theatreList .col-md-6 {
+    display: flex;
+}

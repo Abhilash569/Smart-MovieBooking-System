@@ -154,10 +154,9 @@ function bookMovie(movieId) {
         return;
     }
     
-    // For simplicity, use first theatre
+    // Store movie ID and show theatre selection
     currentMovieId = movieId;
-    currentTheatreId = 1;
-    showSeatSelection(movieId, 1);
+    showTheatreSelection();
 }
 
 // Load theatres from server
@@ -985,4 +984,117 @@ function downloadTicket() {
 function viewMyBookings() {
     bootstrap.Modal.getInstance(document.getElementById('ticketModal')).hide();
     showSection('myBookings');
+}
+
+
+// Theatre Selection Functions
+
+// Show theatre selection modal
+function showTheatreSelection() {
+    // Load all theatres initially
+    loadTheatresForSelection();
+    
+    const modal = new bootstrap.Modal(document.getElementById('theatreSelectionModal'));
+    modal.show();
+}
+
+// Load theatres for selection
+function loadTheatresForSelection() {
+    fetch('/smart-booking/theatres')
+        .then(response => response.json())
+        .then(theatres => {
+            displayTheatresForSelection(theatres);
+        })
+        .catch(error => {
+            console.error('Error loading theatres:', error);
+            alert('Failed to load theatres');
+        });
+}
+
+// Get nearby theatres based on user location
+function getNearbyTheatres() {
+    const statusEl = document.getElementById('locationStatus');
+    statusEl.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Getting your location...';
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                statusEl.innerHTML = '<span class="text-success">✓ Location found</span>';
+                
+                // Fetch nearby theatres
+                fetch('/smart-booking/theatres', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `latitude=${lat}&longitude=${lng}&radius=10`
+                })
+                .then(response => response.json())
+                .then(theatres => {
+                    if (theatres.length === 0) {
+                        statusEl.innerHTML = '<span class="text-warning">No theatres found nearby. Showing all theatres.</span>';
+                        loadTheatresForSelection();
+                    } else {
+                        displayTheatresForSelection(theatres, true);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching nearby theatres:', error);
+                    statusEl.innerHTML = '<span class="text-danger">Error finding nearby theatres</span>';
+                    loadTheatresForSelection();
+                });
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                statusEl.innerHTML = '<span class="text-danger">Location access denied. Showing all theatres.</span>';
+                loadTheatresForSelection();
+            }
+        );
+    } else {
+        statusEl.innerHTML = '<span class="text-danger">Geolocation not supported</span>';
+        loadTheatresForSelection();
+    }
+}
+
+// Display theatres for selection
+function displayTheatresForSelection(theatres, isNearby = false) {
+    const theatreList = document.getElementById('theatreList');
+    
+    if (theatres.length === 0) {
+        theatreList.innerHTML = '<div class="col-12"><p class="text-center text-muted">No theatres available</p></div>';
+        return;
+    }
+    
+    const title = isNearby ? '<div class="col-12"><h6 class="text-success mb-3">Nearby Theatres</h6></div>' : '';
+    
+    theatreList.innerHTML = title + theatres.map(theatre => `
+        <div class="col-md-6 mb-3">
+            <div class="card theatre-card h-100" onclick="selectTheatreForBooking(${theatre.id})">
+                <div class="card-body">
+                    <h6 class="card-title">${theatre.name}</h6>
+                    <p class="card-text small text-muted mb-2">
+                        <i class="bi bi-geo-alt"></i> ${theatre.address}
+                    </p>
+                    ${isNearby ? '<span class="badge bg-success">Nearby</span>' : ''}
+                    <button class="btn btn-sm btn-primary mt-2 w-100">
+                        Select Theatre
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Select theatre and proceed to seat selection
+function selectTheatreForBooking(theatreId) {
+    currentTheatreId = theatreId;
+    
+    // Hide theatre selection modal
+    bootstrap.Modal.getInstance(document.getElementById('theatreSelectionModal')).hide();
+    
+    // Show seat selection modal
+    showSeatSelection(currentMovieId, theatreId);
 }
