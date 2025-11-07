@@ -61,6 +61,10 @@ public class MovieDBService {
                     JsonObject movieJson = element.getAsJsonObject();
                     
                     Movie movie = new Movie();
+                    // Set the ID from API
+                    if (movieJson.has("id")) {
+                        movie.setId(movieJson.get("id").getAsInt());
+                    }
                     movie.setTitle(movieJson.get("title").getAsString());
                     movie.setDescription(movieJson.has("overview") ? movieJson.get("overview").getAsString() : "");
                     movie.setRating(movieJson.has("vote_average") ? movieJson.get("vote_average").getAsDouble() : 0.0);

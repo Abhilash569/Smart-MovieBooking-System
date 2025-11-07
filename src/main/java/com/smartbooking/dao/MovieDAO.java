@@ -97,9 +97,8 @@ public class MovieDAO {
      * Bulk insert movies using batch processing
      */
     public boolean createBatch(List<Movie> movies) {
-        String sql = "INSERT INTO movies (title, genre, rating, duration, language, description, poster_url) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                     "ON DUPLICATE KEY UPDATE title=title";
+        String sql = "MERGE INTO movies (id, title, genre, rating, duration, language, description, poster_url) " +
+                     "KEY(id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -107,19 +106,46 @@ public class MovieDAO {
             conn.setAutoCommit(false);
             
             for (Movie movie : movies) {
-                stmt.setString(1, movie.getTitle());
-                stmt.setString(2, movie.getGenre());
-                stmt.setDouble(3, movie.getRating());
-                stmt.setInt(4, movie.getDuration());
-                stmt.setString(5, movie.getLanguage());
-                stmt.setString(6, movie.getDescription());
-                stmt.setString(7, movie.getPosterUrl());
+                stmt.setInt(1, movie.getId());
+                stmt.setString(2, movie.getTitle());
+                stmt.setString(3, movie.getGenre());
+                stmt.setDouble(4, movie.getRating());
+                stmt.setInt(5, movie.getDuration());
+                stmt.setString(6, movie.getLanguage());
+                stmt.setString(7, movie.getDescription());
+                stmt.setString(8, movie.getPosterUrl());
                 stmt.addBatch();
             }
             
             stmt.executeBatch();
             conn.commit();
             return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * Create or update a movie with specific ID
+     */
+    public boolean createOrUpdate(Movie movie) {
+        String sql = "MERGE INTO movies (id, title, genre, rating, duration, language, description, poster_url) " +
+                     "KEY(id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, movie.getId());
+            stmt.setString(2, movie.getTitle());
+            stmt.setString(3, movie.getGenre());
+            stmt.setDouble(4, movie.getRating());
+            stmt.setInt(5, movie.getDuration());
+            stmt.setString(6, movie.getLanguage());
+            stmt.setString(7, movie.getDescription());
+            stmt.setString(8, movie.getPosterUrl());
+            
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
