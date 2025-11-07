@@ -1042,16 +1042,16 @@ function viewMyBookings() {
 
 // Show theatre selection modal
 function showTheatreSelection() {
-    // Clear previous status and list
-    document.getElementById('locationStatus').innerHTML = '';
-    document.getElementById('theatreList').innerHTML = '<div class="col-12 text-center"><div class="spinner-border" role="status"></div><p>Finding nearby theatres...</p></div>';
+    // SKIP THE MODAL - Show theatres directly on page
+    alert('Loading theatres... Check the Theatres section');
     
-    // Show modal first
-    const modal = new bootstrap.Modal(document.getElementById('theatreSelectionModal'));
-    modal.show();
+    // Switch to theatres section
+    showSection('theatres');
     
-    // Automatically get nearby theatres
-    getNearbyTheatres();
+    // Load theatres there
+    setTimeout(() => {
+        getNearbyTheatres();
+    }, 500);
 }
 
 // Load theatres for selection
@@ -1128,9 +1128,18 @@ function getNearbyTheatres() {
     }
 }
 
-// --- ROBUST displayTheatresForSelection function ---
+// --- SIMPLE displayTheatresForSelection - NO MODAL ---
 function displayTheatresForSelection(theatres, isNearby = false) {
-    const theatreList = document.getElementById('theatreList');
+    // Use the theatres section list instead of modal
+    let theatreList = document.getElementById('theatreList');
+    
+    // If in theatres section, use that container
+    if (!theatreList || theatreList.offsetHeight === 0) {
+        const theatresSection = document.getElementById('theatres');
+        if (theatresSection) {
+            theatreList = theatresSection.querySelector('#theatreList') || theatresSection.querySelector('.row');
+        }
+    }
     
     console.log('=== DISPLAY THEATRES DEBUG ===');
     console.log('Theatres array:', theatres);
@@ -1208,24 +1217,22 @@ function displayTheatresForSelection(theatres, isNearby = false) {
         `;
     }).join('');
     
-    const htmlContent = header + title + items;
+    // Simple HTML - just show the list
+    let simpleHTML = `<div style="padding:20px; background:white;">
+        <h4 style="color:#28a745; margin-bottom:20px;">🎬 ${escapeHtml(movieTitle)} - Select Theatre</h4>
+        <p style="color:#666; margin-bottom:20px;">${isNearby ? '✓ Found ' + theatres.length + ' nearby theatres' : 'Showing all theatres'}</p>
+        <div style="display:flex; flex-wrap:wrap; gap:15px;">
+            ${items}
+        </div>
+    </div>`;
     
-    // Inject HTML safely
-    theatreList.innerHTML = htmlContent;
+    // Inject HTML
+    theatreList.innerHTML = simpleHTML;
+    theatreList.style.display = 'block';
+    theatreList.style.minHeight = '400px';
     
-    // FORCE VISIBILITY - Fix the 0 height issue
-    const modalBody = document.querySelector('#theatreSelectionModal .modal-body');
-    if (modalBody) {
-        modalBody.style.cssText = 'background: white !important; display: block !important; min-height: 400px !important; padding: 20px !important;';
-    }
-    theatreList.style.cssText = 'display: flex !important; flex-wrap: wrap !important; gap: 1rem !important; padding: 10px !important; min-height: 300px !important;';
-    
-    // Force all cards visible
-    setTimeout(() => {
-        theatreList.querySelectorAll('.theatre-card-item').forEach(item => {
-            item.style.cssText = 'display: block !important; width: 45% !important; background: white !important; padding: 10px !important; margin: 5px !important; border: 1px solid #ddd !important; border-radius: 8px !important;';
-        });
-    }, 100);
+    // Scroll to view
+    theatreList.scrollIntoView({ behavior: 'smooth' });
     
     // Attach event listeners defensively
     theatreList.querySelectorAll('.showtime-btn').forEach(btn => {
