@@ -991,6 +991,9 @@ function viewMyBookings() {
 
 // Show theatre selection modal
 function showTheatreSelection() {
+    // Clear previous status
+    document.getElementById('locationStatus').innerHTML = '';
+    
     // Load all theatres initially
     loadTheatresForSelection();
     
@@ -1032,12 +1035,19 @@ function getNearbyTheatres() {
                     },
                     body: `latitude=${lat}&longitude=${lng}&radius=20`
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(theatres => {
+                    console.log('Nearby theatres found:', theatres.length);
                     if (theatres.length === 0) {
-                        statusEl.innerHTML = '<span class="text-warning">No theatres found nearby. Showing all theatres.</span>';
+                        statusEl.innerHTML = '<span class="text-warning">⚠ No theatres found within 20km. Showing all theatres.</span>';
                         loadTheatresForSelection();
                     } else {
+                        statusEl.innerHTML = `<span class="text-success">✓ Found ${theatres.length} nearby theatre(s)</span>`;
                         displayTheatresForSelection(theatres, true);
                     }
                 })
@@ -1063,24 +1073,54 @@ function getNearbyTheatres() {
 function displayTheatresForSelection(theatres, isNearby = false) {
     const theatreList = document.getElementById('theatreList');
     
-    if (theatres.length === 0) {
-        theatreList.innerHTML = '<div class="col-12"><p class="text-center text-muted">No theatres available</p></div>';
+    if (!theatres || theatres.length === 0) {
+        theatreList.innerHTML = '<div class="col-12"><div class="alert alert-info">No theatres available. Please try again.</div></div>';
         return;
     }
     
-    const title = isNearby ? '<div class="col-12"><h6 class="text-success mb-3">Nearby Theatres</h6></div>' : '';
+    console.log('Displaying', theatres.length, 'theatres');
     
-    theatreList.innerHTML = title + theatres.map(theatre => `
+    // Get current movie details
+    const currentMovie = movies.find(m => m.id === currentMovieId);
+    const movieTitle = currentMovie ? currentMovie.title : 'Selected Movie';
+    
+    const header = `
+        <div class="col-12 mb-3">
+            <div class="alert alert-info">
+                <h6 class="mb-2"><i class="bi bi-film"></i> ${movieTitle}</h6>
+                <p class="mb-0 small">Select a theatre to book tickets</p>
+            </div>
+        </div>
+    `;
+    
+    const title = isNearby ? '<div class="col-12"><h6 class="text-success mb-3"><i class="bi bi-geo-alt-fill"></i> Nearby Theatres Showing This Movie</h6></div>' : '<div class="col-12"><h6 class="mb-3">Theatres Showing This Movie</h6></div>';
+    
+    // Generate show times (simplified - same times for all theatres)
+    const showTimes = ['10:00 AM', '1:30 PM', '5:00 PM', '8:30 PM'];
+    
+    theatreList.innerHTML = header + title + theatres.map(theatre => `
         <div class="col-md-6 mb-3">
-            <div class="card theatre-card h-100" onclick="selectTheatreForBooking(${theatre.id})">
+            <div class="card theatre-card h-100">
                 <div class="card-body">
-                    <h6 class="card-title">${theatre.name}</h6>
-                    <p class="card-text small text-muted mb-2">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="card-title mb-0">${theatre.name}</h6>
+                        ${isNearby ? '<span class="badge bg-success">Nearby</span>' : ''}
+                    </div>
+                    <p class="card-text small text-muted mb-3">
                         <i class="bi bi-geo-alt"></i> ${theatre.address}
                     </p>
-                    ${isNearby ? '<span class="badge bg-success">Nearby</span>' : ''}
-                    <button class="btn btn-sm btn-primary mt-2 w-100">
-                        Select Theatre
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2"><i class="bi bi-clock"></i> Show Times:</small>
+                        <div class="d-flex flex-wrap gap-2">
+                            ${showTimes.map(time => `
+                                <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}')">
+                                    ${time}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <button class="btn btn-primary w-100 mt-2" onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}')">
+                        <i class="bi bi-ticket-perforated"></i> Book Tickets
                     </button>
                 </div>
             </div>
@@ -1089,12 +1129,19 @@ function displayTheatresForSelection(theatres, isNearby = false) {
 }
 
 // Select theatre and proceed to seat selection
-function selectTheatreForBooking(theatreId) {
+function selectTheatreForBooking(theatreId, theatreName) {
     currentTheatreId = theatreId;
     
-    // Hide theatre selection modal
-    bootstrap.Modal.getInstance(document.getElementById('theatreSelectionModal')).hide();
+    console.log('Selected theatre:', theatreId, theatreName);
     
-    // Show seat selection modal
-    showSeatSelection(currentMovieId, theatreId);
+    // Hide theatre selection modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('theatreSelectionModal'));
+    if (modal) {
+        modal.hide();
+    }
+    
+    // Small delay to ensure modal is hidden before showing next one
+    setTimeout(() => {
+        showSeatSelection(currentMovieId, theatreId);
+    }, 300);
 }

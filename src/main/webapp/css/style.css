@@ -429,3 +429,31 @@ body {
 #theatreList .col-md-6 {
     display: flex;
 }
+
+
+/* Show Times Styling */
+.theatre-card .btn-outline-primary {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+}
+
+.theatre-card .btn-outline-primary:hover {
+    background-color: #007bff;
+    color: white;
+    transform: scale(1.05);
+}
+
+.gap-2 {
+    gap: 0.5rem !important;
+}
+
+.theatre-card .alert-info {
+    background-color: #e7f3ff;
+    border-color: #b3d9ff;
+}
+
+.theatre-card .card-title {
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
