@@ -1044,26 +1044,32 @@ function viewMyBookings() {
 function showTheatreSelection() {
     // Clear previous status and list
     document.getElementById('locationStatus').innerHTML = '';
-    document.getElementById('theatreList').innerHTML = '<div class="col-12 text-center"><div class="spinner-border" role="status"></div><p>Loading theatres...</p></div>';
+    document.getElementById('theatreList').innerHTML = '<div class="col-12 text-center"><div class="spinner-border" role="status"></div><p>Finding nearby theatres...</p></div>';
     
     // Show modal first
     const modal = new bootstrap.Modal(document.getElementById('theatreSelectionModal'));
     modal.show();
     
-    // Then load all theatres
-    loadTheatresForSelection();
+    // Automatically get nearby theatres
+    getNearbyTheatres();
 }
 
 // Load theatres for selection
 function loadTheatresForSelection() {
+    console.log('Loading theatres for selection...');
     fetch('/smart-booking/theatres')
-        .then(response => response.json())
+        .then(response => {
+            console.log('Theatres response received:', response.status);
+            return response.json();
+        })
         .then(theatres => {
+            console.log('Theatres data:', theatres);
+            console.log('Number of theatres:', theatres.length);
             displayTheatresForSelection(theatres);
         })
         .catch(error => {
             console.error('Error loading theatres:', error);
-            alert('Failed to load theatres');
+            document.getElementById('theatreList').innerHTML = '<div class="col-12"><div class="alert alert-danger">Failed to load theatres. Please try again.</div></div>';
         });
 }
 
@@ -1126,12 +1132,17 @@ function getNearbyTheatres() {
 function displayTheatresForSelection(theatres, isNearby = false) {
     const theatreList = document.getElementById('theatreList');
     
+    console.log('displayTheatresForSelection called with:', theatres);
+    console.log('theatreList element:', theatreList);
+    
     if (!theatres || theatres.length === 0) {
+        console.log('No theatres to display');
         theatreList.innerHTML = '<div class="col-12"><div class="alert alert-info">No theatres available. Please try again.</div></div>';
         return;
     }
     
     console.log('Displaying', theatres.length, 'theatres');
+    console.log('First theatre:', theatres[0]);
     
     // Get current movie details
     const currentMovie = movies.find(m => m.id === currentMovieId);
