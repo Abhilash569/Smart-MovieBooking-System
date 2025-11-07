@@ -71,6 +71,7 @@ public class DBConnection {
                     "seats VARCHAR(255) NOT NULL, " +
                     "total_price DECIMAL(10,2) NOT NULL, " +
                     "status VARCHAR(20) DEFAULT 'CONFIRMED', " +
+                    "show_time VARCHAR(20), " +
                     "booked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                     "FOREIGN KEY (user_id) REFERENCES users(id), " +
                     "FOREIGN KEY (movie_id) REFERENCES movies(id), " +

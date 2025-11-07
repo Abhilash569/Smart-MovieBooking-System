@@ -14,6 +14,7 @@ public class Booking {
     private double totalPrice;
     private Timestamp bookedAt;
     private String status; // CONFIRMED, CANCELLED, MODIFIED
+    private String showTime; // Show time selected by user
     
     // Default constructor
     public Booking() {
@@ -104,5 +105,13 @@ public class Booking {
     
     public void setStatus(String status) {
         this.status = status;
+    }
+    
+    public String getShowTime() {
+        return showTime;
+    }
+    
+    public void setShowTime(String showTime) {
+        this.showTime = showTime;
     }
 }

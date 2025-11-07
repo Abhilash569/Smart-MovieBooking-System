@@ -14,8 +14,8 @@ public class BookingDAO {
      * Create a new booking
      */
     public boolean create(Booking booking) {
-        String sql = "INSERT INTO bookings (user_id, movie_id, theatre_id, seats, total_price, status) " +
-                     "VALUES (?, ?, ?, ?, ?, 'CONFIRMED')";
+        String sql = "INSERT INTO bookings (user_id, movie_id, theatre_id, seats, total_price, show_time, status) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, 'CONFIRMED')";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -24,6 +24,7 @@ public class BookingDAO {
             stmt.setInt(3, booking.getTheatreId());
             stmt.setString(4, booking.getSeats());
             stmt.setDouble(5, booking.getTotalPrice());
+            stmt.setString(6, booking.getShowTime());
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -153,6 +154,47 @@ public class BookingDAO {
             stmt.setDouble(2, newTotalPrice);
             stmt.setInt(3, bookingId);
             stmt.setInt(4, userId);
+            
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * Change theatre for a booking
+     */
+    public boolean changeTheatre(int bookingId, int userId, int newTheatreId, String newShowTime) {
+        String sql = "UPDATE bookings SET theatre_id = ?, show_time = ?, status = 'MODIFIED' WHERE id = ? AND user_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, newTheatreId);
+            stmt.setString(2, newShowTime);
+            stmt.setInt(3, bookingId);
+            stmt.setInt(4, userId);
+            
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * Change movie for a booking
+     */
+    public boolean changeMovie(int bookingId, int userId, int newMovieId) {
+        String sql = "UPDATE bookings SET movie_id = ?, status = 'MODIFIED' WHERE id = ? AND user_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, newMovieId);
+            stmt.setInt(2, bookingId);
+            stmt.setInt(3, userId);
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;

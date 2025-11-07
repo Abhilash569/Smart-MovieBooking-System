@@ -53,6 +53,7 @@ public class BookingServlet extends HttpServlet {
             String movieIdStr = request.getParameter("movieId");
             String theatreIdStr = request.getParameter("theatreId");
             String seats = request.getParameter("seats");
+            String showTime = request.getParameter("showTime");
             
             if (movieIdStr == null || theatreIdStr == null || seats == null || seats.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -83,6 +84,7 @@ public class BookingServlet extends HttpServlet {
             
             // Create booking
             Booking booking = new Booking(userId, movieId, theatreId, seats, totalPrice);
+            booking.setShowTime(showTime);
             
             if (bookingDAO.create(booking)) {
                 result.put("success", true);

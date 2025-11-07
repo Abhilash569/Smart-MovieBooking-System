@@ -646,7 +646,11 @@ function displayBookings(bookings) {
         return;
     }
     
-    bookingsList.innerHTML = bookings.map(booking => `
+    bookingsList.innerHTML = bookings.map(booking => {
+        // Check if show is more than 5 hours away
+        const canChange = canChangeBooking(booking);
+        
+        return `
         <div class="col-md-6 mb-4">
             <div class="card ${booking.status === 'CANCELLED' ? 'border-danger' : ''}">
                 <div class="card-body">
@@ -657,24 +661,71 @@ function displayBookings(bookings) {
                     <p class="card-text">
                         <strong>Movie ID:</strong> ${booking.movieId}<br>
                         <strong>Theatre ID:</strong> ${booking.theatreId}<br>
+                        <strong>Show Time:</strong> ${booking.showTime || 'Not specified'}<br>
                         <strong>Seats:</strong> ${booking.seats}<br>
                         <strong>Total Price:</strong> ₹${booking.totalPrice}<br>
                         <strong>Booked At:</strong> ${new Date(booking.bookedAt).toLocaleString()}
                     </p>
                     ${booking.status === 'CONFIRMED' || booking.status === 'MODIFIED' ? `
-                        <div class="btn-group w-100" role="group">
-                            <button class="btn btn-warning" onclick="modifyBooking(${booking.id}, ${booking.movieId}, ${booking.theatreId}, '${booking.seats}')">
-                                Modify Seats
+                        <div class="d-grid gap-2">
+                            ${canChange ? `
+                                <button class="btn btn-info btn-sm" onclick="changeTheatre(${booking.id}, ${booking.movieId})">
+                                    <i class="bi bi-building"></i> Change Theatre
+                                </button>
+                                <button class="btn btn-info btn-sm" onclick="changeMovie(${booking.id}, ${booking.theatreId})">
+                                    <i class="bi bi-film"></i> Change Movie
+                                </button>
+                            ` : `
+                                <div class="alert alert-warning alert-sm mb-2">
+                                    <small><i class="bi bi-clock"></i> Show is less than 5 hours away. Cannot change theatre/movie.</small>
+                                </div>
+                            `}
+                            <button class="btn btn-warning btn-sm" onclick="modifyBooking(${booking.id}, ${booking.movieId}, ${booking.theatreId}, '${booking.seats}')">
+                                <i class="bi bi-pencil"></i> Modify Seats
                             </button>
-                            <button class="btn btn-danger" onclick="cancelBooking(${booking.id})">
-                                Cancel Booking
+                            <button class="btn btn-danger btn-sm" onclick="cancelBooking(${booking.id})">
+                                <i class="bi bi-x-circle"></i> Cancel Booking
                             </button>
                         </div>
                     ` : ''}
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
+}
+
+// Check if booking can be changed (more than 5 hours before show)
+function canChangeBooking(booking) {
+    if (!booking.showTime) return false;
+    
+    // Parse show time (format: "10:00 AM")
+    const now = new Date();
+    const showDateTime = new Date(now);
+    
+    // Simple parsing - in production, use proper date/time library
+    const timeParts = booking.showTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (timeParts) {
+        let hours = parseInt(timeParts[1]);
+        const minutes = parseInt(timeParts[2]);
+        const period = timeParts[3].toUpperCase();
+        
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        
+        showDateTime.setHours(hours, minutes, 0, 0);
+        
+        // If show time is in the past, assume it's tomorrow
+        if (showDateTime < now) {
+            showDateTime.setDate(showDateTime.getDate() + 1);
+        }
+        
+        // Check if more than 5 hours away
+        const hoursDiff = (showDateTime - now) / (1000 * 60 * 60);
+        return hoursDiff > 5;
+    }
+    
+    return false;
 }
 
 // Get status badge class
@@ -878,7 +929,7 @@ function confirmBookingWithPayment(paymentMethod) {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `movieId=${currentMovieId}&theatreId=${currentTheatreId}&seats=${encodeURIComponent(seats)}`
+        body: `movieId=${currentMovieId}&theatreId=${currentTheatreId}&seats=${encodeURIComponent(seats)}&showTime=${encodeURIComponent(selectedShowTime || '5:00 PM')}`
     })
     .then(response => response.json())
     .then(data => {
@@ -1113,13 +1164,13 @@ function displayTheatresForSelection(theatres, isNearby = false) {
                         <small class="text-muted d-block mb-2"><i class="bi bi-clock"></i> Show Times:</small>
                         <div class="d-flex flex-wrap gap-2">
                             ${showTimes.map(time => `
-                                <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}')">
+                                <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${time}')">
                                     ${time}
                                 </button>
                             `).join('')}
                         </div>
                     </div>
-                    <button class="btn btn-primary w-100 mt-2" onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}')">
+                    <button class="btn btn-primary w-100 mt-2" onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${showTimes[2]}')">
                         <i class="bi bi-ticket-perforated"></i> Book Tickets
                     </button>
                 </div>
@@ -1128,11 +1179,15 @@ function displayTheatresForSelection(theatres, isNearby = false) {
     `).join('');
 }
 
+// Global variable for show time
+let selectedShowTime = null;
+
 // Select theatre and proceed to seat selection
-function selectTheatreForBooking(theatreId, theatreName) {
+function selectTheatreForBooking(theatreId, theatreName, showTime) {
     currentTheatreId = theatreId;
+    selectedShowTime = showTime || '5:00 PM'; // Default show time
     
-    console.log('Selected theatre:', theatreId, theatreName);
+    console.log('Selected theatre:', theatreId, theatreName, 'Show time:', selectedShowTime);
     
     // Hide theatre selection modal
     const modal = bootstrap.Modal.getInstance(document.getElementById('theatreSelectionModal'));
@@ -1144,4 +1199,25 @@ function selectTheatreForBooking(theatreId, theatreName) {
     setTimeout(() => {
         showSeatSelection(currentMovieId, theatreId);
     }, 300);
+}
+
+
+// Change Theatre Functions
+function changeTheatre(bookingId, movieId) {
+    currentMovieId = movieId;
+    window.changingBookingId = bookingId;
+    window.isChangingTheatre = true;
+    
+    // Show theatre selection modal
+    showTheatreSelection();
+}
+
+// Change Movie Functions
+function changeMovie(bookingId, theatreId) {
+    currentTheatreId = theatreId;
+    window.changingBookingId = bookingId;
+    window.isChangingMovie = true;
+    
+    alert('Change Movie feature: Please select a new movie from the Movies section, then book with the same theatre.');
+    showSection('movies');
 }
