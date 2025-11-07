@@ -1184,28 +1184,28 @@ function displayTheatresForSelection(theatres, isNearby = false) {
     // Example show times
     const showTimes = ['10:00 AM', '1:30 PM', '5:00 PM', '8:30 PM'];
     
-    // Generate theatre cards
+    // Generate theatre cards with inline styles for visibility
     let htmlContent = header + title;
     theatres.forEach(theatre => {
         htmlContent += `
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
+        <div class="col-md-6 mb-4" style="display:block !important; visibility:visible !important;">
+            <div class="card shadow-sm h-100" style="display:block !important; visibility:visible !important; background:#fff !important; border:1px solid #ddd !important; border-radius:8px;">
+                <div class="card-body" style="background:#fff !important; color:#000 !important; padding:1rem;">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="card-title mb-0">${theatre.name}</h6>
-                        ${isNearby ? '<span class="badge bg-success">Nearby</span>' : ''}
+                        <h6 class="card-title mb-0" style="color:#2c3e50 !important; font-weight:600;">${theatre.name}</h6>
+                        ${isNearby ? '<span class="badge bg-success" style="background:#28a745 !important; color:#fff !important;">Nearby</span>' : ''}
                     </div>
-                    <p class="text-muted small mb-2">
+                    <p class="text-muted small mb-2" style="color:#6c757d !important;">
                         <i class="bi bi-geo-alt"></i> ${theatre.address || 'Address not available'}
                     </p>
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         ${showTimes.map(time => `
-                            <button class="btn btn-sm btn-outline-primary"
+                            <button class="btn btn-sm btn-outline-primary" style="display:inline-block !important; visibility:visible !important;"
                                 onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${time}')">
                                 ${time}
                             </button>`).join('')}
                     </div>
-                    <button class="btn btn-primary w-100"
+                    <button class="btn btn-primary w-100" style="display:block !important; visibility:visible !important; background:#007bff !important; color:#fff !important;"
                         onclick="event.stopPropagation(); selectTheatreForBooking(${theatre.id}, '${theatre.name.replace(/'/g, "\\'")}', '${showTimes[2]}')">
                         <i class="bi bi-ticket-perforated"></i> Book Tickets
                     </button>
