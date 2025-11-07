@@ -350,22 +350,6 @@
         </div>
     </div>
 
-    <!-- Theatre Selection Modal -->
-    <div class="modal fade" id="theatreSelectionModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">Select Theatre</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="locationStatus" class="mb-3 text-muted small"></div>
-                    <div id="theatreList" class="row g-3"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Payment Modal -->
     <div class="modal fade" id="paymentModal" tabindex="-1">
         <div class="modal-dialog">

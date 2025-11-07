@@ -1220,6 +1220,11 @@ function displayTheatresForSelection(theatres, isNearby = false) {
     theatreList.style.flexWrap = "wrap";
     theatreList.style.gap = "1rem";
     
+    // Force display refresh and scroll into view
+    setTimeout(() => {
+        theatreList.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 300);
+    
     console.log('✅ HTML injected. theatreList.innerHTML length:', theatreList.innerHTML.length);
     console.log('✅ theatreList.children.length:', theatreList.children.length);
     

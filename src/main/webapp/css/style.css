@@ -488,3 +488,44 @@ body {
     color: #2c3e50;
     font-size: 1.1rem;
 }
+
+/* --- THEATRE MODAL VISIBILITY FIX --- */
+#theatreSelectionModal .modal-body {
+    background-color: #f9f9ff !important;
+    min-height: 300px;
+    overflow-y: auto;
+    border-top: 2px solid #ddd;
+}
+
+#theatreList {
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 1rem;
+    padding: 10px;
+    background-color: #ffffff !important;
+    color: #000 !important;
+}
+
+#theatreList .card {
+    display: block !important;
+    background: #fff !important;
+    border: 1px solid #e1e1e1 !important;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: calc(50% - 1rem);
+    transition: transform 0.2s ease;
+}
+
+#theatreList .card:hover {
+    transform: scale(1.02);
+}
+
+#theatreList .card-title {
+    color: #2c3e50 !important;
+    font-weight: 600;
+}
+
+#theatreList button {
+    font-size: 0.85rem;
+}
