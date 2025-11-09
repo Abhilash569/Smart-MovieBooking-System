@@ -4,28 +4,38 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.h2.tools.Server;
 
 /**
- * Database connection utility class for managing H2 in-memory database
+ * Database connection utility class for managing H2 persistent database
  */
 public class DBConnection {
     
-    // Using H2 in-memory database (no installation required!)
-    private static final String URL = "jdbc:h2:mem:smartmoviebooking;DB_CLOSE_DELAY=-1;MODE=MySQL";
+    // Using H2 file-based database (persistent storage)
+    private static final String URL = "jdbc:h2:~/smartbookingdb;MODE=MySQL;IFEXISTS=FALSE";
     private static final String USER = "sa";
     private static final String PASSWORD = "";
     private static final String DRIVER = "org.h2.Driver";
     
     private static boolean initialized = false;
+    private static Server webServer;
     
     static {
         try {
             // Load H2 JDBC driver
             Class.forName(DRIVER);
+            
+            // Start H2 Web Console on port 8082
+            webServer = Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8082").start();
+            System.out.println("✅ H2 Database connected successfully");
+            System.out.println("✅ Open SQL Console at http://localhost:8082");
+            
             // Initialize database schema
             initializeDatabase();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("H2 JDBC Driver not found", e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to start H2 Web Console", e);
         }
     }
     
